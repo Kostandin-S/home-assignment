@@ -1,0 +1,27 @@
+{
+  "https://www.ynet.co.il/articles/0,7340,L-5778984,00.html": [
+    {
+      "type": "Accessible Name",
+      "severity": "Critical",
+      "component": "6543wcfr",
+      "selector": "#tbl_mt > TBODY:nth-child(2) > TR:nth-child(1) > TD:nth-child(6)"
+    },
+    {
+      "type": "Interactive Role",
+      "severity": "Critical",
+      "component": "xydww2ed",
+      "selector": "#BJrajb3MOdP > DIV:nth-child(1) > DIV:nth-child(1) > DIV:nth-child(2) > A:nth-child(2)"
+    }
+  ],
+  "https://www.ynet.co.il/dating/couples": [],
+  "https://www.ynet.co.il/dating/singles": [],
+  "https://www.ynet.co.il/economy/category/5363": [],
+  "https://www.ynet.co.il/economy/category/8091": [],
+  "https://www.ynet.co.il/economy/marketingadvertising": [],
+  "https://www.ynet.co.il/food/recipies": [],
+  "https://www.ynet.co.il/home/0,7340,L-1039,00.html": [],
+  "https://www.ynet.co.il/home/0,7340,L-1042,00.html": [],
+  "https://www.ynet.co.il/home/0,7340,L-10610,00.html": [],
+  "https://www.ynet.co.il/home/0,7340,L-10677,00.html": [],
+  "https://www.ynet.co.il/home/0,7340,L-2758,00.html": []
+}
