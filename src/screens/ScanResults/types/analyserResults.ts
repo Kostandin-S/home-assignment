@@ -1,4 +1,4 @@
-import { Issue } from "../../../types/analyserResultsRes";
+import { Issue } from "../../../api/requests/types/analyserResultsRes";
 
 export type DetailedIssue = Issue & {
   id: string;

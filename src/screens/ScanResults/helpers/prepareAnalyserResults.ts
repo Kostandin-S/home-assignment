@@ -1,10 +1,10 @@
-import AnalyserResultsRes from "../../../types/analyserResultsRes";
+import AnalyserResultsRes from "../../../api/requests/types/analyserResultsRes";
 import { AnalyserResults } from "../types/analyserResults";
 
 export const prepareAnalyserResults = (
-  analyserResultsRes: AnalyserResultsRes
+  analyserResultsRes?: AnalyserResultsRes
 ): AnalyserResults =>
-  Object.entries(analyserResultsRes).reduce<AnalyserResults>(
+  Object.entries(analyserResultsRes || []).reduce<AnalyserResults>(
     (result, [url, issues]) => {
       const category = url.split("/")[3] || "other";
 
