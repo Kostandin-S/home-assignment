@@ -1,10 +1,9 @@
-import type { TreeDataNode } from "antd";
-
+import { TreeNode } from "../../../../../components/CostumeTree/types/treeNode";
 import { AnalyserResults } from "../../../types/analyserResults";
 
 export const prepareTreeData = (
   analyserResults: AnalyserResults
-): TreeDataNode[] => {
+): TreeNode[] => {
   const categories = Object.keys(analyserResults);
   if (categories.length === 0) return [];
 
@@ -16,15 +15,15 @@ export const prepareTreeData = (
 
   return [
     {
-      title: "root",
-      key: "root",
+      id: "root",
+      label: "root",
       children: [
         {
-          title: baseUrl,
-          key: `root-${baseUrl}`,
+          id: `root-${baseUrl}`,
+          label: baseUrl,
           children: categories.map((category) => ({
-            title: category,
-            key: `root-${baseUrl}-${category}`,
+            id: `root-${baseUrl}-${category}`,
+            label: category,
           })),
         },
       ],

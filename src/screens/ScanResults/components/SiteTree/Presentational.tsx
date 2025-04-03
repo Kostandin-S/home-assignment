@@ -1,12 +1,14 @@
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
-import { Tree, Input } from 'antd';
-
+import { FaSearch } from "react-icons/fa";
 import { prepareTreeData } from './helpers/prepareTreeData';
 import { AnalyserResults } from '../../types/analyserResults';
-import getDefaultSelectedKey from './helpers/getDefaultSelectedKey';
+import { getDefaultSelectedNode } from './helpers/getDefaultSelectedNode';
 import styles from './styles.module.scss';
 import CardContainer from '../../../../components/CardContainer/Presentational';
 import { useSiteTreeFilter } from './hooks/useSiteTreeFilter';
+import CustomTree from '../../../../components/CostumeTree/Presentational';
+import { Input, InputGroup } from '@chakra-ui/react';
+import { TreeNode } from '../../../../components/CostumeTree/types/treeNode';
 
 interface Props {
   analyserResults: AnalyserResults;
@@ -18,32 +20,31 @@ const SiteTree: React.FC<Props> = ({ analyserResults, setSelectedCategory, selec
   const [searchTerm, setSearchTerm] = useState<string>();
 
   const treeData = useMemo(() => prepareTreeData(analyserResults), [analyserResults]);
-  const defaultKey = useMemo(() => getDefaultSelectedKey(treeData), [treeData]);
-
-  const { Search } = Input;
+  const defaultSelectedNode = useMemo(() => getDefaultSelectedNode(treeData), [treeData]);
 
   useEffect(() => {
     if (treeData.length > 0 && !selectedCategory) {
-      const defaultCategory = defaultKey[0].toString().split("-")[2];
-      setSelectedCategory(defaultCategory);
+      setSelectedCategory(defaultSelectedNode?.label);
     }
-  }, [defaultKey, selectedCategory, setSelectedCategory, treeData]);
+  }, [defaultSelectedNode?.label, selectedCategory, setSelectedCategory, treeData.length]);
 
   const filteredTreeData = useSiteTreeFilter(treeData, searchTerm);
 
   return (
     <CardContainer title="Site Tree" childStyles={styles.container}>
-      <Search
-        placeholder='Search site'
-        className={styles.search}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-      <Tree
-        treeData={filteredTreeData}
-        onSelect={(_, info) => setSelectedCategory(String(info.node.title) || undefined)}
-        defaultSelectedKeys={defaultKey}
+      <InputGroup endElement={<FaSearch />} mb={2}>
+        <Input
+          placeholder="Search site"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          aria-label="Search site"
+        />
+      </InputGroup>
+      <CustomTree
+        data={filteredTreeData}
         defaultExpandAll
-        showLine
+        onSelect={(node: TreeNode) => setSelectedCategory(node?.label)}
+        defaultSelectedNodeId={defaultSelectedNode?.id}
       />
     </CardContainer>
   )
