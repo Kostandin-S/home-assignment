@@ -1,6 +1,6 @@
 import React from 'react'
 import styles from './styles.module.scss';
-import { Card } from 'antd';
+import { Card } from "@chakra-ui/react"
 
 interface Props {
   children: React.ReactNode;
@@ -11,9 +11,12 @@ interface Props {
 const CardContainer: React.FC<Props> = ({ children, title, childStyles }) => {
 
   return (
-    <Card title={title} className={`${styles.container} ${childStyles}`}>
-      {children}
-    </Card>
+    <Card.Root className={`${styles.container} ${childStyles}`}>
+      <Card.Title ml="7" mt="2">{title}</Card.Title>
+      <Card.Body>
+        {children}
+      </Card.Body>
+    </Card.Root>
   )
 }
 
