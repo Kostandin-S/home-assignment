@@ -1,15 +1,22 @@
-import Table, { ColumnProps } from 'antd/es/table';
-import { FaSearch } from "react-icons/fa";
-
-import { TableData } from './types/tableData';
-import { ColumName } from './enums/columnName';
-import styles from './styles.module.scss';
-import { AnalyserResults } from '../../types/analyserResults';
-import CardContainer from '../../../../components/CardContainer/Presentational';
-import { Input } from 'antd';
-import { useState } from 'react';
-import { Filters } from './types/filter';
-import { applyFilter } from './helpers/applyFilter';
+import { useMemo, useState } from "react";
+import { FaSearch, FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
+import { RxExternalLink } from "react-icons/rx";
+import {
+  Table,
+  Input,
+  InputGroup,
+  Link,
+  Box
+} from "@chakra-ui/react";
+import CardContainer from "../../../../components/CardContainer/Presentational";
+import { AnalyserResults } from "../../types/analyserResults";
+import { ColumName } from "./enums/columnName";
+import styles from "./styles.module.scss";
+import { Filters } from "./types/filter";
+import { applyFilter } from "./helpers/applyFilter";
+import { SortConfig } from './types/sorting';
+import { applySorting } from './helpers/applySorting';
+import { generateAriaSort } from './helpers/generateAriaSort';
 
 interface Props {
   analyserResults: AnalyserResults;
@@ -17,72 +24,98 @@ interface Props {
 }
 
 const ResultsTable: React.FC<Props> = ({ analyserResults, selectedCategory }) => {
-  const { Search } = Input;
-
   const [filters, setFilters] = useState<Filters>({
-    [ColumName.Url]: undefined,
-    [ColumName.Type]: undefined,
-    [ColumName.Component]: undefined,
+    [ColumName.Url]: "",
+    [ColumName.Type]: "",
+    [ColumName.Component]: "",
   });
 
-  const initialData = selectedCategory ? analyserResults[selectedCategory] : [];
-  const filteredTableData = applyFilter(initialData, filters)
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    column: null,
+    direction: null,
+  });
 
-  const renderFilterDropdown = (placeholder: string, columnKey: ColumName) => ({ confirm }: { confirm: () => void }) => (
-    <Search
-      placeholder={placeholder}
-      className={styles.search}
-      onSearch={(searchTerm) => {
-        setFilters((prevState) => ({ ...prevState, [columnKey]: searchTerm }));
-        confirm();
-      }}
-      allowClear
-      enterButton
-    />
-  );
+  const renderSortIcon = (column: ColumName) => {
+    if (sortConfig.column !== column) return <FaSort className={`${styles.sortIcon} ${styles.noActiveSorting}`} />;
+    return sortConfig.direction === "asc" ? <FaSortUp className={styles.sortIcon} /> : <FaSortDown className={styles.sortIcon} />;
+  };
 
-  const columns: ColumnProps<TableData>[] = [
-    {
-      title: 'Url',
-      width: '50%',
-      dataIndex: ColumName.Url,
-      render: (value: string) => <a href={value} target='_blank' rel="noopener noreferrer">{value}</a>,
-      sorter: (a, b) => a[ColumName.Url].localeCompare(b[ColumName.Url]),
-      filterIcon: <FaSearch />,
-      filteredValue: filters[ColumName.Url] ? [filters[ColumName.Url]] : [],
-      filterDropdown: renderFilterDropdown('Filter by URL', ColumName.Url),
-    },
-    {
-      title: 'Type',
-      dataIndex: ColumName.Type,
-      sorter: (a, b) => a[ColumName.Type].localeCompare(b[ColumName.Type]),
-      filterIcon: <FaSearch />,
-      filteredValue: filters[ColumName.Type] ? [filters[ColumName.Type]] : [],
-      filterDropdown: renderFilterDropdown('Filter by Type', ColumName.Type),
-    },
-    {
-      title: 'Component',
-      dataIndex: ColumName.Component,
-      sorter: (a, b) => a[ColumName.Component].localeCompare(b[ColumName.Component]),
-      filterIcon: <FaSearch />,
-      filteredValue: filters[ColumName.Component] ? [filters[ColumName.Component]] : [],
-      filterDropdown: renderFilterDropdown('Filter by Component', ColumName.Component),
-    }
-  ];
+  const handleSort = (column: ColumName) => {
+    setSortConfig(({ column: prevColumn, direction: prevDirection }) => {
+      const sortingDirection = prevDirection === "asc" ? "desc" : "asc"
+
+      return {
+        column: prevColumn === column && prevDirection === "desc" ? null : column,
+        direction: prevColumn === column ? sortingDirection : "asc",
+      }
+    });
+  };
+
+  const sortedData = useMemo(() => {
+    const initialData = selectedCategory ? analyserResults[selectedCategory] : [];
+    return applySorting(applyFilter(initialData, filters), sortConfig);
+  }, [selectedCategory, analyserResults, filters, sortConfig]);
 
   return (
     <CardContainer title={selectedCategory} childStyles={styles.container}>
-      <Table
-        dataSource={filteredTableData}
-        columns={columns}
-        rowKey={(row) => row.id}
-        expandable={{
-          expandedRowRender: (record) => <p className={styles.selector}>Selector: {record.selector}</p>
-        }}
-        scroll={{ y: 200 }}
-      />
+      <Table.ScrollArea borderWidth="1px" rounded="md" height="300px">
+        <Table.Root size="md" interactive stickyHeader>
+          <Table.Header>
+            <Table.Row>
+              {Object.values(ColumName).map((column) => (
+                <Table.ColumnHeader
+                  key={column}
+                  onClick={() => handleSort(column)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSort(column)
+                    }
+                  }}
+                  cursor="pointer"
+                  aria-sort={generateAriaSort(sortConfig, column)}
+                  tabIndex={0}
+                >
+                  <Box display='flex' alignItems='center' justifyContent='space-between'>
+                    {column}
+                    {renderSortIcon(column)}
+                  </Box>
+                </Table.ColumnHeader>
+              ))}
+            </Table.Row>
+
+            <Table.Row>
+              {Object.values(ColumName).map((column) => (
+                <Table.ColumnHeader key={`${column}-filter`}>
+                  <InputGroup endElement={<FaSearch />}>
+                    <Input
+                      placeholder={`Search ${column}`}
+                      value={filters[column] || ""}
+                      onChange={(e) => setFilters((prev) => ({ ...prev, [column]: e.target.value }))}
+                      aria-label={`Search ${column}`}
+                    />
+                  </InputGroup>
+                </Table.ColumnHeader>
+              ))}
+            </Table.Row>
+          </Table.Header>
+
+          <Table.Body>
+            {sortedData.map((data) => (
+              <Table.Row key={data.id}>
+                <Table.Cell tabIndex={0}>
+                  <Link href={data.url} colorPalette="blue" rel="noopener noreferrer" aria-label={`Visit ${data.url}, which has accessibility issues`}>
+                    {data.url} <RxExternalLink />
+                  </Link>
+                </Table.Cell>
+                <Table.Cell tabIndex={0}>{data.type}</Table.Cell>
+                <Table.Cell tabIndex={0}>{data.component}</Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
+      </Table.ScrollArea>
     </CardContainer>
-  )
+  );
 };
 
 export default ResultsTable;
