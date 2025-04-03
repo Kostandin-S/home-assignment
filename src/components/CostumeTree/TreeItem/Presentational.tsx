@@ -24,6 +24,7 @@ const TreeItem: React.FC<Props> = ({
     <List.Item
       role="tree-item"
       cursor="pointer"
+      width="max-content"
       tabIndex={0}
       p={0.5}
       aria-expanded={node.children ? expanded : undefined}
